@@ -4,6 +4,8 @@ const Hapi = require('hapi');
 const config = require(__dirname + '/config.js');
 const fs = require('fs');
 
+const routes = require('./routes');
+
 const options = {
   key: fs.readFileSync(config.key_path),
   cert: fs.readFileSync(config.cert_path),
@@ -15,13 +17,7 @@ server.connection({
   tls: options,
 });
 
-server.route({
-  method: 'GET',
-  path: '/',
-  handler: function (request, reply) {
-   reply('Hello, world!');
-  }
-});
+server.route(routes(config));
 
 server.start((err) => {
   console.log('uLinux Update Server running at:', server.info.uri);
