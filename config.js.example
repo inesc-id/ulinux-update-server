@@ -1,0 +1,5 @@
+module.exports = {
+  port: 8443,
+  key_path: 'server.key',
+  cert_path: 'server.crt',
+};
