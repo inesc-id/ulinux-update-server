@@ -9,6 +9,9 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "hapi": "^13.0.0"
+    "boom": "^3.1.2",
+    "hapi": "^13.0.0",
+    "inert": "^3.2.0",
+    "mysql": "^2.10.2"
   }
 }
