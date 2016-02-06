@@ -4,7 +4,7 @@ module.exports = function (config, db) {
 
   const getImage = {
     method: 'GET',
-    path: '/images/{id}',
+    path: '/updates/{id}',
     handler: function (request, reply) {
       db.query(
         'select * from device_images where id = ?',
@@ -30,28 +30,38 @@ module.exports = function (config, db) {
   };
 
   const getLatestImageMetadata = {
-    method: 'GET',
-    path: '/images/latest',
+    method: 'POST',
+    path: '/newUpdate',
     handler: function (request, reply) {
+
+      if (!request.payload.timestamp) {
+        return reply(Boom.badRequest('Request payload does not contain' +
+          ' required \'timestamp\' property.'));
+      }
+
       db.query(
-        'select * from device_images order by timestamp desc',
-        [request.params.id],
+        'select * from device_images where timestamp > ? order by timestamp desc',
+        [request.payload.timestamp],
         (err, result) => {
 
           if (err) {
-
             const response = Boom.badImplementation(
-              'Error found while fetching latest image metadata ' +
+              'Error found while fetching image metadata ' +
               'information from the database',
               err
             );
-            reply(response);
-
-          } else {
-
-            reply(result[0]);
+            return reply(response);
           }
-        }
+
+          if (result.length > 0)
+            return reply({
+              updateId: result[0].id,
+              message: true,
+            });
+          }
+
+          return reply({ message: false });
+
       );
     },
   }
