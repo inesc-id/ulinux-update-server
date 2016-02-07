@@ -6,9 +6,20 @@ module.exports = function (config, db) {
     method: 'POST',
     path: '/imAlive',
     handler: function (request, reply) {
+
+      if (!request.payload.deviceId
+        || !request.payload.firmwareVersion
+        || !requestpayload.port) {
+          return reply(Boom.badRequest('Request payload does not contain' +
+            ' atleast one of the required \'deviceId\', \'firmwareVersion\'' +
+            ' or \'port\' properties.'));
+      }
+
       db.query(
-        'insert into device_imalives (device_id, firmware_version) values (?, ?)',
-        [request.payload.deviceId, request.payload.firmwareVersion],
+        'insert into device_imalives (device_id, firmware_version, ip, port) ' +
+        'values (?, ?, ?, ?)',
+        [].concat(request.payload.deviceId, request.payload.firmwareVersion,
+           request.info.address, request.payload.port),
         (err, result) => {
 
           if (err) {
@@ -22,7 +33,7 @@ module.exports = function (config, db) {
 
           }
 
-          return reply();
+          return reply({success: true});
         }
       );
     },
