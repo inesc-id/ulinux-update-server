@@ -35,6 +35,20 @@ server.connection({
 
 server.register(Inert, () => {});
 
+const validateFunction = function (token, callback) {
+  let userCredentials = {}
+  if (token === config.ss_token) {
+    userCredentials.scope = 'ss';
+    callback(null, true, userCredentials);
+  } else {
+    callback(null, false, userCredentials);
+  }
+};
+server.register(require('hapi-auth-bearer-simple'));
+server.auth.strategy('bearer', 'bearerAuth', {
+  validateFunction: validateFunction
+});
+
 server.route(routes(config, db));
 
 server.start((err) => {
