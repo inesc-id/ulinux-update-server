@@ -1,4 +1,6 @@
 const Boom = require('boom');
+const Path = require('path');
+const fs = require('fs');
 
 module.exports = function (config, db) {
 
@@ -95,14 +97,17 @@ module.exports = function (config, db) {
             })
 
         });
+      } else {
+        return reply(Boom.badRequest('Required file missing from request.'));
       }
-
-      return reply(Boom.badRequest('Required file missing from request.'));
     },
     config: {
       auth: {
         strategy: 'bearer',
         scope: 'ss',
+      },
+      payload: {
+        output: 'stream',
       },
     },
   };
