@@ -1,3 +1,5 @@
+'use strict';
+
 const Boom = require('boom');
 const Path = require('path');
 const fs = require('fs');
@@ -7,7 +9,7 @@ module.exports = function (config, db) {
   const getImage = {
     method: 'GET',
     path: '/updates/{id}',
-    handler: function (request, reply) {
+    handler: (request, reply) => {
       db.query(
         'select * from device_images where id = ?',
         [request.params.id],
@@ -20,12 +22,14 @@ module.exports = function (config, db) {
               'information from the database',
               err
             );
-            reply(response);
+            return reply(response);
 
-          } else {
-
-            reply.file('device_images/' + result.filename);
           }
+
+          if (result.length != 0)
+            return reply.file('device_images/' + result[0].filename);
+          else
+            return reply(Boom.notFound('Device image with given id not found.'));
         }
       );
     },
@@ -34,7 +38,7 @@ module.exports = function (config, db) {
   const getLatestImageMetadata = {
     method: 'POST',
     path: '/newUpdate',
-    handler: function (request, reply) {
+    handler: (request, reply) => {
 
       if (!request.payload.timestamp) {
         return reply(Boom.badRequest('Request payload does not contain' +
@@ -42,7 +46,7 @@ module.exports = function (config, db) {
       }
 
       db.query(
-        'select * from device_images where timestamp > ? order by timestamp desc',
+        'select * from device_images where timestamp > FROM_UNIXTIME(?) order by timestamp desc',
         [request.payload.timestamp],
         (err, result) => {
 
@@ -71,7 +75,7 @@ module.exports = function (config, db) {
   const postImage = {
     method: 'POST',
     path: '/updates/',
-    handler: function (request, reply) {
+    handler: (request, reply) => {
       var data = request.payload;
       if (data.file) {
         var name = Date.now() + '_' + data.file.hapi.filename;
