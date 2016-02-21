@@ -10,28 +10,33 @@ module.exports = function (config, db) {
     method: 'GET',
     path: '/updates/{id}',
     handler: (request, reply) => {
-      db.query(
-        'select * from device_images where id = ?',
-        [request.params.id],
-        (err, result) => {
+      // This is a devices-only endpoint
+      if (request.raw.req.client.authorized) {
+        db.query(
+          'select * from device_images where id = ?',
+          [request.params.id],
+          (err, result) => {
 
-          if (err) {
+            if (err) {
 
-            const response = Boom.badImplementation(
-              'Error found while fetching device image ' +
-              'information from the database',
-              err
-            );
-            return reply(response);
+              const response = Boom.badImplementation(
+                'Error found while fetching device image ' +
+                'information from the database',
+                err
+              );
+              return reply(response);
 
+            }
+
+            if (result.length != 0)
+              return reply.file('device_images/' + result[0].filename);
+            else
+              return reply(Boom.notFound('Device image with given id not found.'));
           }
-
-          if (result.length != 0)
-            return reply.file('device_images/' + result[0].filename);
-          else
-            return reply(Boom.notFound('Device image with given id not found.'));
-        }
-      );
+        );
+      } else {
+        return reply(Boom.unauthorized('No valid client certificate was presented.'));
+      }
     },
   };
 
@@ -39,36 +44,41 @@ module.exports = function (config, db) {
     method: 'POST',
     path: '/newUpdate',
     handler: (request, reply) => {
+      // This is a devices-only endpoint
+      if (request.raw.req.client.authorized) {
 
-      if (!request.payload.timestamp) {
-        return reply(Boom.badRequest('Request payload does not contain' +
-          ' required \'timestamp\' property.'));
-      }
-
-      db.query(
-        'select * from device_images where timestamp > FROM_UNIXTIME(?) order by timestamp desc',
-        [request.payload.timestamp],
-        (err, result) => {
-
-          if (err) {
-            const response = Boom.badImplementation(
-              'Error found while fetching image metadata ' +
-              'information from the database',
-              err
-            );
-            return reply(response);
-          }
-
-          if (result.length > 0) {
-            return reply({
-              updateId: result[0].id,
-              message: true,
-            });
-          }
-
-          return reply({ message: false });
+        if (!request.payload.timestamp) {
+          return reply(Boom.badRequest('Request payload does not contain' +
+            ' required \'timestamp\' property.'));
         }
-      );
+
+        db.query(
+          'select * from device_images where timestamp > FROM_UNIXTIME(?) order by timestamp desc',
+          [request.payload.timestamp],
+          (err, result) => {
+
+            if (err) {
+              const response = Boom.badImplementation(
+                'Error found while fetching image metadata ' +
+                'information from the database',
+                err
+              );
+              return reply(response);
+            }
+
+            if (result.length > 0) {
+              return reply({
+                updateId: result[0].id,
+                message: true,
+              });
+            }
+
+            return reply({ message: false });
+          }
+        );
+      } else {
+      return reply(Boom.unauthorized('No valid client certificate was presented.'));
+      }
     },
   };
 
@@ -112,6 +122,7 @@ module.exports = function (config, db) {
       },
       payload: {
         output: 'stream',
+        maxBytes: config.image_maxsize,
       },
     },
   };

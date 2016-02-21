@@ -20,6 +20,11 @@ const db  = mysql.createPool({
 const options = {
   key: fs.readFileSync(config.key_path),
   cert: fs.readFileSync(config.cert_path),
+  ca: [
+    fs.readFileSync(config.devices_ca_cert),
+  ],
+  requestCert: true,
+  rejectUnauthorized: false,
 };
 
 const server = new Hapi.Server();

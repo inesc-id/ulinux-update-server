@@ -1,5 +1,15 @@
 module.exports = {
   port: 8443,
+  image_maxsize: 1048576*1024, //1GiB
+
   key_path: 'server.key',
   cert_path: 'server.crt',
+  devices_ca_cert: 'devices_ca.crt',
+
+  db_host: 'localhost',
+  db_database: 'ulinux',
+  db_user: 'ulinux',
+  db_pass: 'ulinux',
+
+  ss_token: '',
 };
