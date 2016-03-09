@@ -12,6 +12,7 @@ module.exports = function (config, db) {
     handler: (request, reply) => {
       // This is a devices-only endpoint
       if (request.raw.req.client.authorized) {
+        console.log(`Client requested update with id: ${request.params.id}. Looking for it in the database.`);
         db.query(
           'select * from device_images where id = ?',
           [request.params.id],
@@ -28,8 +29,10 @@ module.exports = function (config, db) {
 
             }
 
-            if (result.length != 0)
+            if (result.length != 0) {
+              console.log('Found image, sending it to client.');
               return reply.file('device_images/' + result[0].filename);
+            }
             else
               return reply(Boom.notFound('Device image with given id not found.'));
           }
@@ -46,6 +49,8 @@ module.exports = function (config, db) {
     handler: (request, reply) => {
       // This is a devices-only endpoint
       if (request.raw.req.client.authorized) {
+
+        console.log('Device asking for latest update by timestamp.');
 
         if (!request.payload.timestamp) {
           return reply(Boom.badRequest('Request payload does not contain' +
@@ -67,6 +72,7 @@ module.exports = function (config, db) {
             }
 
             if (result.length > 0) {
+              console.log('Sending latest image metadata to client.');
               return reply({
                 updateId: result[0].id,
                 message: true,
@@ -88,6 +94,7 @@ module.exports = function (config, db) {
     handler: (request, reply) => {
       var data = request.payload;
       if (data.file) {
+        console.log('Receiving new update image from signing server.');
         var name = Date.now() + '_' + data.file.hapi.filename;
         var path = Path.join(__dirname, '..', 'public/device_images/', name);
         var file = fs.createWriteStream(path);
