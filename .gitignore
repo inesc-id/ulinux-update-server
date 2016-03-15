@@ -5,5 +5,6 @@ public/
 config.js
 *.crt
 *.key
+*.log
 
 *.swp

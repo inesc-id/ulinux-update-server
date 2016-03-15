@@ -17,6 +17,24 @@ const db  = mysql.createPool({
   password        : config.db_pass,
 });
 
+const logger = require('winston');
+logger.remove(logger.transports.Console);
+logger.add(logger.transports.Console, {
+  level: config.logs.console_level ? config.logs.console_level: 'info',
+  colorize: true,
+  timestamp: true,
+})
+
+if (config.logs.file)
+  logger.add(logger.transports.File, {
+    level: config.logs.file_level ? config.logs.file_level : 'error',
+    filename: config.logs.file,
+  });
+
+logger.info('Welcome to uLinux Update Server, ' +
+  'we hope you have a productive day! :) ');
+if (config.logs.file) logger.info('Logging to file: %s', config.logs.file);
+
 const options = {
   key: fs.readFileSync(config.key_path),
   cert: fs.readFileSync(config.cert_path),
@@ -54,9 +72,9 @@ server.auth.strategy('bearer', 'bearerAuth', {
   validateFunction: validateFunction
 });
 
-server.route(routes(config, db));
+server.route(routes(config, db, logger));
 
 server.start((err) => {
-  console.log('uLinux Update Server running at:', server.info.uri);
+  logger.info('uLinux Update Server running at:', server.info.uri);
   if (err) throw err;
 });

@@ -5,11 +5,18 @@ module.exports = {
   key_path: 'server.key',
   cert_path: 'server.crt',
   devices_ca_cert: 'devices_ca.crt',
+  servers_ca_cert: 'servers_ca.crt',
 
   db_host: 'localhost',
   db_database: 'ulinux',
   db_user: 'ulinux',
   db_pass: 'ulinux',
+
+  logs: {
+    file: 'us.log',
+    file_level: 'info', // Winston logger levels
+    console_level: 'info',
+  },
 
   ss_token: '',
 };
