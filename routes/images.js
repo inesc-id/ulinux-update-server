@@ -99,8 +99,8 @@ module.exports = function (config, db, logger) {
               });
             }
             logger.info('Not sending any image metadata to client (%s), ' +
-              'no image was created after given timestamp.',
-              request.info.remoteAddress);
+              'no image was created after given timestamp (%s).',
+              request.info.remoteAddress, request.payload.timestamp);
             return reply({ message: false });
           }
         );
