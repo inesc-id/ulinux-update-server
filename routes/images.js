@@ -4,7 +4,19 @@ const Boom = require('boom');
 const Path = require('path');
 const fs = require('fs');
 
+const EventEmitter = require('events');
+const util = require('util');
+const notifier = require('./update_notifier');
+
 module.exports = function (config, db, logger) {
+
+  function UpdateEmitter() {
+    EventEmitter.call(this);
+  }
+  util.inherits(UpdateEmitter, EventEmitter);
+
+  const updateEmitter = new UpdateEmitter();
+  updateEmitter.on('update', notifier(config, db, logger));
 
   const getImage = {
     method: 'GET',
@@ -146,6 +158,8 @@ module.exports = function (config, db, logger) {
                 return reply(Boom.badImplementation(
                   'Error found while inserting device image into the database'));
               }
+
+              updateEmitter.emit('update');
 
               return reply({ success: true });
             })
