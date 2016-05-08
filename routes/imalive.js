@@ -9,7 +9,7 @@ module.exports = function (config, db) {
 
       if (!request.payload.deviceId
         || !request.payload.firmwareVersion
-        || !requestpayload.port) {
+        || !request.payload.port) {
           return reply(Boom.badRequest('Request payload does not contain' +
             ' atleast one of the required \'deviceId\', \'firmwareVersion\'' +
             ' or \'port\' properties.'));

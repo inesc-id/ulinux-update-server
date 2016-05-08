@@ -18,5 +18,7 @@ module.exports = {
     console_level: 'info',
   },
 
+  client_imalive_interval: 5*60*1000, // 5 minutes
+
   ss_token: '',
 };

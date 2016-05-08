@@ -6,6 +6,8 @@ const fs = require('fs');
 
 const Queue = require('bee-queue');
 
+const requestp = require('request-promise');
+
 module.exports = function (config, db, logger) {
 
 const notifyClientsQ = new Queue('clients');
@@ -41,8 +43,26 @@ notifyClientsQ.process(function (job, done) {
 notifyClientQ.process(function (job, done) {
   let url = `https://${job.data.ip}:${job.data.port}/newUpdate`;
   logger.debug(`Sending update notification to ${url}: {id: ${job.data.id}, timestamp: ${job.data.timestamp}}`);
-  // TODO: actually call the endpoints
-  return done();
+  requestp.post({
+    url: url,
+    ca: [
+      // Only allow clients with certificates signed by the Device CA to get this
+      fs.readFileSync(Path.join(__dirname, '..', config.devices_ca_cert),
+    ],
+    // Do not check clients' certificates hostnames
+    // we must sign for localhost as it may change (ISP, etc)
+    checkServerIdentity: () => { return undefined; },
+    form: {
+      id: id,
+      timestamp: timestamp
+    }
+  }).then(() => {
+    logger.debug(`Sent update notification to ${url}`);
+    return done();
+  }).catch((err) => {
+    logger.debug(`Update notification failed for ${url}`, err);
+    return done();
+  });
 });
 
 return {
