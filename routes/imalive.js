@@ -19,7 +19,7 @@ module.exports = function (config, db) {
         'insert into device_imalives (device_id, firmware_version, ip, port) ' +
         'values (?, ?, ?, ?)',
         [].concat(request.payload.deviceId, request.payload.firmwareVersion,
-           request.info.address, request.payload.port),
+           request.info.remoteAddress, request.payload.port),
         (err, result) => {
 
           if (err) {

@@ -47,14 +47,14 @@ notifyClientQ.process(function (job, done) {
     url: url,
     ca: [
       // Only allow clients with certificates signed by the Device CA to get this
-      fs.readFileSync(Path.join(__dirname, '..', config.devices_ca_cert),
+      fs.readFileSync(Path.join(__dirname, '..', config.devices_ca_cert)),
     ],
     // Do not check clients' certificates hostnames
     // we must sign for localhost as it may change (ISP, etc)
     checkServerIdentity: () => { return undefined; },
     form: {
-      id: id,
-      timestamp: timestamp
+      id: job.data.id,
+      timestamp: job.data.timestamp
     }
   }).then(() => {
     logger.debug(`Sent update notification to ${url}`);
