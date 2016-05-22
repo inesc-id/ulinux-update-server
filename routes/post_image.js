@@ -13,6 +13,10 @@ module.exports = function (config, db, logger) {
 const notifyClientsQ = new Queue('clients');
 const notifyClientQ = new Queue('client');
 
+const devices_ca_cert = fs.readFileSync(Path.join(__dirname, '..', config.devices_ca_cert));
+const client_cert = fs.readFileSync(Path.join(__dirname, '..', config.client_cert_path));
+const client_key = fs.readFileSync(Path.join(__dirname, '..', config.client_key_path));
+
 notifyClientsQ.process(function (job, done) {
   let now = new Date();
   let tenMinutesAgo = new Date(now.getTime() - config.client_imalive_interval * 2);
@@ -47,8 +51,11 @@ notifyClientQ.process(function (job, done) {
     url: url,
     ca: [
       // Only allow clients with certificates signed by the Device CA to get this
-      fs.readFileSync(Path.join(__dirname, '..', config.devices_ca_cert)),
+      devices_ca_cert,
     ],
+    // Authenticate update server with device
+    cert: client_cert,
+    key: client_key,
     // Do not check clients' certificates hostnames
     // we must sign for localhost as it may change (ISP, etc)
     checkServerIdentity: () => { return undefined; },
